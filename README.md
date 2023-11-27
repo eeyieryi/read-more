@@ -23,3 +23,19 @@ An application to help me organize and archive texts that I will repeatedly be r
     ```sh
     pnpm run dev
     ```
+
+## Docker
+
+0. Copy and rename `.env.example` to `.env.prod`
+
+1. Edit the values in the `.env.prod` file
+
+2. Edit the values in `compose.yaml` file
+
+3. Run
+
+    ```sh
+    docker-compose up -d --build
+    ```
+
+4. Enjoy

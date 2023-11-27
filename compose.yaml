@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+    webapp:
+        build:
+            context: .
+            dockerfile: app.dockerfile
+        restart: always
+        ports:
+            - "5789:4173"
+        volumes:
+            - ${PWD}/prisma/dev.db:/app/prisma/prod.db
+    static:
+        build:
+            context: .
+            dockerfile: nginx.dockerfile
+        restart: always
+        ports:
+            - "5790:8080"
+        volumes:
+            - ${PWD}/static/audios/:/app/static/audios/
