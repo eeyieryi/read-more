@@ -8,8 +8,8 @@ services:
         restart: always
         ports:
             - "5789:4173"
-        volumes:
-            - ${PWD}/prisma/dev.db:/app/prisma/prod.db
+        # volumes:
+        #     - ${PWD}/prisma/dev.db:/app/prisma/prod.db
     static:
         build:
             context: .
