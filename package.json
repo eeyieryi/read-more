@@ -4,13 +4,17 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
+		"dev": "concurrently \"pnpm dev:fs\" \"pnpm dev:web\"",
+		"dev:web": "vite dev",
+		"build:web": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"dev:fs": "pnpm build:fs && pnpm run:fs",
+		"build:fs": "go build -o read-more-fs fs.go",
+		"run:fs": "DATA_DIR=data/ FS_PORT=5284 ./read-more-fs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.1.1",
@@ -19,6 +23,7 @@
 		"@typescript-eslint/eslint-plugin": "^6.12.0",
 		"@typescript-eslint/parser": "^6.12.0",
 		"autoprefixer": "^10.4.16",
+		"concurrently": "^8.2.2",
 		"eslint": "^8.54.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-import": "^2.29.0",

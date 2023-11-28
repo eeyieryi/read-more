@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
-	fs := http.FileServer(http.Dir("static/"))
-	http.Handle("/", http.StripPrefix("", fs))
-
-	err := http.ListenAndServe(":5790", nil)
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("Starting server on port :5790")
-	}
+	data_dir := os.Getenv("DATA_DIR")
+	port := os.Getenv("FS_PORT")
+	fs := http.FileServer(http.Dir(data_dir))
+	http.Handle("/", fs)
+	fmt.Println("Serving files from", data_dir)
+	fmt.Println("Starting server on port :", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
