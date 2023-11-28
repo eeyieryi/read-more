@@ -10,12 +10,12 @@ services:
             - "5789:4173"
         # volumes:
         #     - ${PWD}/prisma/dev.db:/app/prisma/prod.db
-    static:
+    fs:
         build:
             context: .
-            dockerfile: nginx.dockerfile
+            dockerfile: fs.dockerfile
         restart: always
         ports:
-            - "5790:8080"
+            - "5790:5790"
         volumes:
-            - ${PWD}/static/audios/:/app/static/audios/
+            - ${PWD}/data/audios/:/app/static/audios/

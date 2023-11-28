@@ -16,4 +16,4 @@
 
 !/.env.prod
 
-!/nginx.conf
+!/fs.go

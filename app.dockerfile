@@ -12,9 +12,6 @@ FROM setup AS build
 COPY . /app
 RUN mv /app/.env.prod /app/.env
 
-# Clean up
-RUN rm /app/nginx.conf
-
 # Install packages
 RUN pnpm install --frozen-lockfile
 
