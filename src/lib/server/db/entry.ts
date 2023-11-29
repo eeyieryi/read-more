@@ -39,11 +39,6 @@ export const validators = {
 	updateOne: (data: Unknown<UpdateOneDto>) => updateOneSchema.safeParse(data)
 };
 
-export async function findAll(): Promise<Entry[]> {
-	// TODO: Handle exceptions for Prisma
-	return await prisma.entry.findMany();
-}
-
 export async function findOneById(id: string): Promise<EntryData | null> {
 	return await prisma.entry.findUnique({
 		where: { id },

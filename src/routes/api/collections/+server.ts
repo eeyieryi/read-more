@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw inputError();
 	}
 
-	const createdEntry = await collectionRepo.createOne(result.data);
+	const createdCollection = await collectionRepo.createOne(result.data);
 
-	return json(createdEntry);
+	return json(createdCollection);
 };

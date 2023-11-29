@@ -22,7 +22,6 @@ export const validators = {
 };
 
 export async function findAll(): Promise<Collection[]> {
-	// TODO: Handle exceptions for Prisma
 	return await prisma.collection.findMany();
 }
 

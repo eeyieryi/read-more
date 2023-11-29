@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 
 export const inputError = () =>
-	error(402, {
+	error(400, {
 		message: 'wrong input'
 	});
 
