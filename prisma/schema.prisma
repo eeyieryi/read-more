@@ -22,6 +22,8 @@ model Collection {
   url         String
 
   entries Entry[]
+
+  @@map("collections")
 }
 
 model Entry {
@@ -32,9 +34,11 @@ model Entry {
   url         String
 
   transcription String
-  audioFilename String
+  audioFilename String  @map("audio_filename")
   seen          Boolean
 
-  collectionId String
+  collectionId String     @map("collection_id")
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@map("entries")
 }
