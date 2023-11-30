@@ -1,18 +1,21 @@
 <script lang="ts">
 	import EntryDetail from './EntryDetail.svelte';
-	import type { PageServerData } from './$types';
+	import type { PageData } from './$types';
 	import { goto, invalidateAll } from '$app/navigation';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
-	import type { entryRepo } from '$lib/server/db';
-	import { PUBLIC_STATIC_FILES_BASE_URL } from '$env/static/public';
+	import type { entryModel } from '$lib/models';
+	import {
+		PUBLIC_BACKEND_API,
+		PUBLIC_BACKEND_BASE_URL
+	} from '$env/static/public';
 
-	export let data: PageServerData;
+	export let data: PageData;
 
 	let showActions = false;
 
 	const audioFilename =
 		data.entryData.audioFilename.length > 0
-			? `${PUBLIC_STATIC_FILES_BASE_URL}/audios/${data.entryData.audioFilename}`
+			? `${PUBLIC_BACKEND_BASE_URL}/audios/${data.entryData.audioFilename}`
 			: '';
 
 	const deleteEntry = async () => {
@@ -22,55 +25,52 @@
 			)
 		)
 			return;
-		const res = await fetch(`/api/entries/${data.entryData.id}`, {
-			method: 'DELETE'
-		});
+		const res = await fetch(
+			`${PUBLIC_BACKEND_API}/entries/${data.entryData.id}`,
+			{
+				method: 'DELETE'
+			}
+		);
 		if (res.ok) {
 			goto(`/collections/${data.entryData.collectionId}`);
 		}
 	};
 
-	const cloneEntry = (): entryRepo.UpdateOneDto => {
+	const cloneEntry = (): entryModel.UpdateOneDto => {
 		return {
 			...data.entryData
 		};
 	};
 	type ViewerMode = 'view' | 'edit';
 	let currentMode: ViewerMode = 'view';
-	let updateOneDto: entryRepo.UpdateOneDto;
+	let updateOneDto: entryModel.UpdateOneDto;
 	updateOneDto = cloneEntry();
 	const saveEntry = async () => {
-		const res = await fetch(`/api/entries/${updateOneDto.id}`, {
-			method: 'PUT',
-			body: JSON.stringify(updateOneDto),
-			headers: {
-				'content-type': 'application/json'
+		const res = await fetch(
+			`${PUBLIC_BACKEND_API}/entries/${updateOneDto.id}`,
+			{
+				method: 'PUT',
+				body: JSON.stringify(updateOneDto),
+				headers: {
+					'content-type': 'application/json'
+				}
 			}
-		});
+		);
 		if (res.ok) {
-			await invalidateAll();
-			currentMode = 'view';
-			showActions = false;
+			if (data.entryData.seen !== updateOneDto.seen) {
+				await invalidateAll();
+				goto(`/collections/${data.entryData.collectionId}`);
+			} else {
+				await invalidateAll();
+				currentMode = 'view';
+				showActions = false;
+			}
 		}
 	};
 	const discardChanges = async () => {
 		updateOneDto = cloneEntry();
 		currentMode = 'view';
 		showActions = false;
-	};
-
-	const updateEntryStatus = async () => {
-		const res = await fetch(`/api/entries/${data.entryData.id}`, {
-			method: 'PUT',
-			body: JSON.stringify(updateOneDto),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		if (res.ok) {
-			await invalidateAll();
-			goto(`/collections/${data.entryData.collectionId}`);
-		}
 	};
 </script>
 
@@ -108,7 +108,7 @@
 					<input
 						type="checkbox"
 						bind:checked="{updateOneDto.seen}"
-						on:change|preventDefault="{updateEntryStatus}" />
+						on:change|preventDefault="{saveEntry}" />
 				</label>
 				<button
 					class="invisible ml-auto block border px-3 py-2 text-lg uppercase"

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { PageServerData } from './$types';
+	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 
 	const dispatch = createEventDispatcher();
 
-	export let data: PageServerData;
+	export let data: PageData;
 </script>
 
 <div class="flex flex-col">

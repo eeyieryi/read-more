@@ -11,9 +11,3 @@ node_modules
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
-
-/.svelte-kit
-/build
-/node_modules
-/prisma
-/static/audios

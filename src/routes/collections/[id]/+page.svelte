@@ -1,10 +1,11 @@
 <script lang="ts">
 	import EntryList from './EntryList.svelte';
 	import CollectionDetail from './CollectionDetail.svelte';
-	import type { PageServerData } from './$types';
+	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { PUBLIC_BACKEND_API } from '$env/static/public';
 
-	export let data: PageServerData;
+	export let data: PageData;
 
 	const deleteCollection = async () => {
 		if (
@@ -15,9 +16,12 @@
 			return;
 		}
 
-		const res = await fetch(`/api/collections/${data.collectionData.id}`, {
-			method: 'DELETE'
-		});
+		const res = await fetch(
+			`${PUBLIC_BACKEND_API}/collections/${data.collectionData.id}`,
+			{
+				method: 'DELETE'
+			}
+		);
 		if (res.ok) {
 			goto('/');
 		}

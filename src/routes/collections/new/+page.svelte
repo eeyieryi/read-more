@@ -1,15 +1,16 @@
 <script lang="ts">
-	import type { Collection, collectionRepo } from '$lib/server/db';
 	import { goto } from '$app/navigation';
+	import { PUBLIC_BACKEND_API } from '$env/static/public';
+	import type { collectionModel } from '$lib/models';
 
-	const createOneDto: collectionRepo.CreateOneDto = {
+	const createOneDto: collectionModel.CreateOneDto = {
 		title: '',
 		description: '',
 		url: ''
 	};
 
 	const handleSubmit = async () => {
-		const res = await fetch('/api/collections', {
+		const res = await fetch(`${PUBLIC_BACKEND_API}/collections`, {
 			method: 'POST',
 			body: JSON.stringify(createOneDto),
 			headers: {
@@ -17,7 +18,8 @@
 			}
 		});
 		if (res.ok) {
-			const createdCollection = (await res.json()) as Collection;
+			const createdCollection =
+				(await res.json()) as collectionModel.Collection;
 			goto(`/collections/${createdCollection.id}`);
 		}
 	};

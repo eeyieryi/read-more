@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import type { entryRepo, Entry } from '$lib/server/db';
+	import { PUBLIC_BACKEND_API } from '$env/static/public';
+	import { entryModel } from '$lib/models';
 
 	export let data: PageData;
 
-	const createOneDto: entryRepo.CreateOneDto = {
+	const createOneDto: entryModel.CreateOneDto = {
 		title: '',
 		description: '',
 		url: '',
@@ -15,17 +16,59 @@
 		collectionTitle: ''
 	};
 
-	const handleSubmit = async () => {
-		const res = await fetch('/api/entries', {
-			method: 'POST',
-			body: JSON.stringify(createOneDto),
-			headers: {
-				'content-type': 'application/json'
+	let filesToUpload: FileList | undefined;
+
+	const handleSubmit = async (e: SubmitEvent) => {
+		if (!e.defaultPrevented) {
+			e.preventDefault();
+		}
+
+		if (filesToUpload !== undefined && filesToUpload.length === 1) {
+			// if there is an audio file to upload
+			const audioFile = filesToUpload[0];
+			if (audioFile.name.length > 0 && createOneDto.title.length > 0) {
+				const body = new FormData();
+				body.set('audioFile', audioFile);
+				body.set('entryTitle', createOneDto.title);
+				const res = await fetch(`${PUBLIC_BACKEND_API}/upload`, {
+					method: 'POST',
+					body
+				});
+				if (res.ok) {
+					const data = (await res.json()) as {
+						audioFilename: string;
+					};
+					createOneDto.audioFilename = data.audioFilename;
+				} else {
+					// TODO: handle error
+					return;
+				}
+			} else {
+				// TODO: handle error
+				return;
 			}
-		});
-		if (res.ok) {
-			const createdEntry = (await res.json()) as Entry;
-			goto(`/entries/${createdEntry.id}`);
+		}
+
+		const result = entryModel.validators.createOne(createOneDto);
+		if (result.success) {
+			const res = await fetch(`${PUBLIC_BACKEND_API}/entries`, {
+				method: 'POST',
+				body: JSON.stringify(createOneDto),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+			if (res.ok) {
+				const createdEntry = (await res.json()) as entryModel.Entry;
+				goto(`/entries/${createdEntry.id}`);
+			} else {
+				// TODO: handle error
+				return;
+			}
+		} else {
+			console.error(result.error.errors);
+			// TODO: handle error
+			return;
 		}
 	};
 </script>
@@ -48,6 +91,7 @@
 			<input
 				class="border px-3 py-2 text-gray-900"
 				id="title"
+				name="title"
 				type="text"
 				bind:value="{createOneDto.title}" />
 		</div>
@@ -58,8 +102,21 @@
 			<input
 				class="border px-3 py-2"
 				id="url"
+				name="url"
 				type="text"
 				bind:value="{createOneDto.url}" />
+		</div>
+		<div class="mb-4 flex flex-col">
+			<label
+				class="mb-2 text-lg font-bold uppercase text-gray-900"
+				for="url">audio file</label>
+			<input
+				class="border px-3 py-2"
+				id="audioFile"
+				name="audioFile"
+				type="file"
+				bind:files="{filesToUpload}"
+				accept="audio/mp3 audio/ogg" />
 		</div>
 		<div class="mb-4 flex flex-col">
 			<label
@@ -68,6 +125,7 @@
 			<textarea
 				class="h-56 resize-none border px-3 py-2 text-gray-900"
 				id="transcription"
+				name="transcription"
 				bind:value="{createOneDto.transcription}"></textarea>
 		</div>
 		<div class="mb-4 flex flex-row items-center">
@@ -77,6 +135,7 @@
 			<select
 				class="px-3 py-2 text-lg text-gray-900"
 				id="collection"
+				name="collection"
 				bind:value="{createOneDto.collectionId}">
 				<option value="">-</option>
 
@@ -92,6 +151,7 @@
 			<input
 				class="border px-3 py-2"
 				id="new-collection"
+				name="new-collection"
 				type="text"
 				bind:value="{createOneDto.collectionTitle}" />
 		</div>
