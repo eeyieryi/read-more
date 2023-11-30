@@ -5,3 +5,5 @@
 
 !/.gitignore
 !/.gitmodules
+!/compose.yaml
+!/README.md

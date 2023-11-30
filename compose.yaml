@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+    frontend:
+        build:
+            context: ./read-more-frontend
+            args:
+                - PUBLIC_BACKEND_BASE_URL=http://localhost:5824
+                - PUBLIC_BACKEND_API=http://localhost:5824/api/v1
+        restart: always
+        environment:
+            - FRONTEND_HOST=0.0.0.0
+            - FRONTEND_PORT=5789
+            - FRONTEND_ORIGIN=http://localhost:5789
+        ports:
+            - '5789:5789'
+    backend:
+        build:
+            context: ./read-more-backend
+        restart: always
+        environment:
+            - PORT=8080
+        ports:
+            - '5824:8080'
+        volumes:
+            - "${PWD}/_data:/app/_data"
