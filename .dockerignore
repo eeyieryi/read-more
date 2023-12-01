@@ -13,6 +13,7 @@
 !/package.json
 !/pnpm-lock.yaml
 !/postcss.config.cjs
+!/LICENSE
 !/README.md
 !/svelte.config.js
 !/tailwind.config.cjs
