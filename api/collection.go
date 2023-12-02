@@ -29,7 +29,7 @@ func collectionCreateOne(c *gin.Context) {
 
 	err = collection.CreateOne(db)
 	if err != nil {
-		log.Println("[Error] collectionCreateOne [1]:", err)
+		log.Println("[Error] collectionCreateOne [2]:", err)
 		badRequest(c)
 		return
 	}
