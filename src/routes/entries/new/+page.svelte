@@ -66,7 +66,6 @@
 				return;
 			}
 		} else {
-			console.error(result.error.errors);
 			// TODO: handle error
 			return;
 		}

@@ -2,8 +2,6 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-
-	console.log(data.collectionData.entries);
 </script>
 
 <div class="scrollable flex flex-col pt-1.5">
