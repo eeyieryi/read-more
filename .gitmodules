@@ -1,6 +1,3 @@
-[submodule "read-more-frontend"]
-	path = read-more-frontend
-	url = https://github.com/eeyieryi/read-more-frontend.git
 [submodule "read-more-backend"]
 	path = read-more-backend
 	url = https://github.com/eeyieryi/read-more-backend.git
