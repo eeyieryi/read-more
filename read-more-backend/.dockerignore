@@ -1,0 +1,13 @@
+**
+
+!/api/*.go
+!/database/*.go
+!/models/*.go
+!/go.mod
+!/go.sum
+!/main.go
+
+!/LICENSE
+!/README.md
+
+**/.DS_Store
