@@ -82,6 +82,7 @@
 	</h1>
 	<form
 		class="flex h-full flex-col"
+		enctype="multipart/form-data"
 		on:submit|preventDefault="{handleSubmit}">
 		<div class="mb-4 flex flex-col">
 			<label
