@@ -34,7 +34,7 @@ func (e *Entry) FindOne(db *gorm.DB, with *Entry) (err error) {
 
 func (e *Entry) CreateOne(db *gorm.DB, collectionTitle string) (err error) {
 	return db.Transaction(func(tx *gorm.DB) (err error) {
-		if e.CollectionID == uuid.Nil && len(collectionTitle) > 1 {
+		if e.CollectionID == uuid.Nil && len(collectionTitle) >= 1 {
 			newCollection := &Collection{
 				Title:       collectionTitle,
 				Description: collectionTitle,
