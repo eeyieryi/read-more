@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"read-more-backend/models"
@@ -12,17 +10,18 @@ import (
 )
 
 func CollectionCreateOne(c *gin.Context) {
-	data, err := io.ReadAll(c.Request.Body)
+	var err error
+	var collection models.Collection
+
+	err = c.ShouldBindJSON(&collection)
 	if err != nil {
 		log.Println("[Error] collectionCreateOne [0]:", err)
 		badRequest(c)
 		return
 	}
 
-	collection := models.Collection{}
-	err = json.Unmarshal(data, &collection)
-	if err != nil {
-		log.Println("[Error] collectionCreateOne [1]:", err)
+	if len(collection.Title) < 1 {
+		log.Println("[Error] collectionCreateOne [1]")
 		badRequest(c)
 		return
 	}

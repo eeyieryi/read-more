@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"read-more-backend/models"
@@ -12,33 +10,37 @@ import (
 )
 
 func EntryCreateOne(c *gin.Context) {
-	data, err := io.ReadAll(c.Request.Body)
+	var err error
+	var dto models.CreateEntryDto
+
+	err = c.ShouldBindJSON(&dto)
 	if err != nil {
 		log.Println("[Error] entryCreateOne [0]:", err)
 		badRequest(c)
-		return
 	}
 
-	createEntryDto := models.CreateEntryDto{}
-	err = json.Unmarshal(data, &createEntryDto)
-	if err != nil {
-		log.Println("[Error] entryCreateOne [1]:", err)
+	if len(dto.Title) < 1 || len(dto.Transcription) < 1 {
+		log.Println("[Error] entryCreateOne [1])")
 		badRequest(c)
-		return
+	}
+
+	if len(dto.CollectionTitle) < 1 && dto.CollectionID == uuid.Nil {
+		log.Println("[Error] entryCreateOne [2]")
+		badRequest(c)
 	}
 
 	entry := models.Entry{
-		Title:         createEntryDto.Title,
-		Description:   createEntryDto.Description,
-		URL:           createEntryDto.URL,
-		Transcription: createEntryDto.Transcription,
-		AudioFilename: createEntryDto.AudioFilename,
+		Title:         dto.Title,
+		Description:   dto.Description,
+		URL:           dto.URL,
+		Transcription: dto.Transcription,
+		AudioFilename: dto.AudioFilename,
 		Seen:          false,
-		CollectionID:  createEntryDto.CollectionID,
+		CollectionID:  dto.CollectionID,
 	}
-	err = entry.CreateOne(models.Database, createEntryDto.CollectionTitle)
+	err = entry.CreateOne(models.Database, dto.CollectionTitle)
 	if err != nil {
-		log.Println("[Error] entryCreateOne [2]:", err)
+		log.Println("[Error] entryCreateOne [3]:", err)
 		badRequest(c)
 		return
 	}
@@ -66,29 +68,43 @@ func EntryFindOne(c *gin.Context) {
 }
 
 func EntryUpdateOne(c *gin.Context) {
-	// TODO: Use id from params?
-	data, err := io.ReadAll(c.Request.Body)
+	var err error
+	var id uuid.UUID
+
+	id, err = uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("[Error] entryUpdateOne [0]:", err)
 		badRequest(c)
 		return
 	}
 
-	updateEntryDto := models.UpdateEntryDto{}
-	err = json.Unmarshal(data, &updateEntryDto)
+	var dto models.UpdateEntryDto
+
+	err = c.ShouldBindJSON(&dto)
 	if err != nil {
 		log.Println("[Error] entryUpdateOne [1]:", err)
 		badRequest(c)
 		return
 	}
 
-	entry := models.Entry{
-		ID: updateEntryDto.ID,
+	if dto.ID == uuid.Nil || id == uuid.Nil {
+		log.Println("[Error] entryUpdateOne [2]")
+		badRequest(c)
+		return
 	}
 
-	err = entry.UpdateOne(models.Database, &updateEntryDto)
+	if dto.ID != id {
+		log.Println("[Error] entryUpdateOne [3]")
+		badRequest(c)
+		return
+	}
+
+	entry := models.Entry{
+		ID: id,
+	}
+	err = entry.UpdateOne(models.Database, &dto)
 	if err != nil {
-		log.Println("[Error] entryUpdateOne [2]:", err)
+		log.Println("[Error] entryUpdateOne [4]:", err)
 		badRequest(c)
 		return
 	}
