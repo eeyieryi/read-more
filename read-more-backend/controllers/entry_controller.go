@@ -1,4 +1,4 @@
-package api
+package controllers
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func entryCreateOne(c *gin.Context) {
+func EntryCreateOne(c *gin.Context) {
 	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Println("[Error] entryCreateOne [0]:", err)
@@ -36,7 +36,7 @@ func entryCreateOne(c *gin.Context) {
 		Seen:          false,
 		CollectionID:  createEntryDto.CollectionID,
 	}
-	err = entry.CreateOne(db, createEntryDto.CollectionTitle)
+	err = entry.CreateOne(models.Database, createEntryDto.CollectionTitle)
 	if err != nil {
 		log.Println("[Error] entryCreateOne [2]:", err)
 		badRequest(c)
@@ -46,7 +46,7 @@ func entryCreateOne(c *gin.Context) {
 	c.JSON(http.StatusCreated, entry)
 }
 
-func entryFindOne(c *gin.Context) {
+func EntryFindOne(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("[Error] entryFindOne [0]:", err)
@@ -55,7 +55,7 @@ func entryFindOne(c *gin.Context) {
 	}
 
 	entry := &models.Entry{}
-	err = entry.FindOne(db, &models.Entry{ID: id})
+	err = entry.FindOne(models.Database, &models.Entry{ID: id})
 	if err != nil {
 		log.Println("[Error] entryFindOne [1]:", err)
 		badRequest(c)
@@ -65,7 +65,7 @@ func entryFindOne(c *gin.Context) {
 	c.JSON(http.StatusOK, entry)
 }
 
-func entryUpdateOne(c *gin.Context) {
+func EntryUpdateOne(c *gin.Context) {
 	// TODO: Use id from params?
 	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -86,7 +86,7 @@ func entryUpdateOne(c *gin.Context) {
 		ID: updateEntryDto.ID,
 	}
 
-	err = entry.UpdateOne(db, &updateEntryDto)
+	err = entry.UpdateOne(models.Database, &updateEntryDto)
 	if err != nil {
 		log.Println("[Error] entryUpdateOne [2]:", err)
 		badRequest(c)
@@ -96,7 +96,7 @@ func entryUpdateOne(c *gin.Context) {
 	c.JSON(http.StatusOK, entry)
 }
 
-func entryDeleteOne(c *gin.Context) {
+func EntryDeleteOne(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("[Error] entryDeleteOne [0]:", err)
@@ -107,7 +107,7 @@ func entryDeleteOne(c *gin.Context) {
 	entry := &models.Entry{
 		ID: id,
 	}
-	err = entry.DeleteOne(db)
+	err = entry.DeleteOne(models.Database)
 	if err != nil {
 		log.Println("[Error] entryDeleteOne [1]:", err)
 		badRequest(c)

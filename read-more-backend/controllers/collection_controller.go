@@ -1,4 +1,4 @@
-package api
+package controllers
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func collectionCreateOne(c *gin.Context) {
+func CollectionCreateOne(c *gin.Context) {
 	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Println("[Error] collectionCreateOne [0]:", err)
@@ -27,7 +27,7 @@ func collectionCreateOne(c *gin.Context) {
 		return
 	}
 
-	err = collection.CreateOne(db)
+	err = collection.CreateOne(models.Database)
 	if err != nil {
 		log.Println("[Error] collectionCreateOne [2]:", err)
 		badRequest(c)
@@ -37,8 +37,8 @@ func collectionCreateOne(c *gin.Context) {
 	c.JSON(http.StatusCreated, collection)
 }
 
-func collectionFindAll(c *gin.Context) {
-	collections, err := (&models.Collection{}).FindAll(db)
+func CollectionFindAll(c *gin.Context) {
+	collections, err := (&models.Collection{}).FindAll(models.Database)
 	if err != nil {
 		internalServerError(c)
 		return
@@ -47,7 +47,7 @@ func collectionFindAll(c *gin.Context) {
 	c.JSON(http.StatusOK, collections)
 }
 
-func collectionFindOne(c *gin.Context) {
+func CollectionFindOne(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("[Error] collectionFindOne [0]:", err)
@@ -56,7 +56,7 @@ func collectionFindOne(c *gin.Context) {
 	}
 
 	collection := &models.Collection{}
-	err = collection.FindOne(db, &models.Collection{ID: id})
+	err = collection.FindOne(models.Database, &models.Collection{ID: id})
 	if err != nil {
 		log.Println("[Error] collectionFindOne [1]:", err)
 		badRequest(c)
@@ -66,7 +66,7 @@ func collectionFindOne(c *gin.Context) {
 	c.JSON(http.StatusOK, collection)
 }
 
-func collectionDeleteOne(c *gin.Context) {
+func CollectionDeleteOne(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		log.Println("[Error] collectionDeleteOne [0]:", err)
@@ -77,7 +77,7 @@ func collectionDeleteOne(c *gin.Context) {
 	collection := &models.Collection{
 		ID: id,
 	}
-	err = collection.DeleteOne(db)
+	err = collection.DeleteOne(models.Database)
 	if err != nil {
 		log.Println("[Error] collectionDeleteOne [1]:", err)
 		badRequest(c)

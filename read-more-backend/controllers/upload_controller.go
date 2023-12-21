@@ -1,4 +1,4 @@
-package api
+package controllers
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uploadHandler(c *gin.Context) {
+func UploadHandler(c *gin.Context) {
 	file, err := c.FormFile("audioFile")
 	if err != nil {
 		log.Println("[Error] UploadHandler [0]:", err)

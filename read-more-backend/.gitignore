@@ -2,10 +2,10 @@
 
 !/api
 !/api/**
-!/database
-!/database/**
 !/models
 !/models/**
+!/controllers
+!/controllers/**
 
 !/.gitignore
 !/go.mod
@@ -17,3 +17,5 @@
 
 !/README.md
 !/LICENSE
+
+**/.DS_Store

@@ -1,39 +1,35 @@
 package api
 
 import (
+	"read-more-backend/controllers"
+
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-var (
-	db *gorm.DB
-)
-
-func Setup(router *gin.Engine, database *gorm.DB) {
-	db = database
+func Setup(router *gin.Engine) {
 
 	api := router.Group("/api")
 
 	v1 := api.Group("/v1")
 	currentVersion := v1
 
-	currentVersion.POST("/upload", uploadHandler)
+	currentVersion.POST("/upload", controllers.UploadHandler)
 
 	collections := currentVersion.Group("collections")
 	{
-		collections.GET("", collectionFindAll)
-		collections.POST("", collectionCreateOne)
+		collections.GET("", controllers.CollectionFindAll)
+		collections.POST("", controllers.CollectionCreateOne)
 
-		collections.GET("/:id", collectionFindOne)
-		collections.DELETE("/:id", collectionDeleteOne)
+		collections.GET("/:id", controllers.CollectionFindOne)
+		collections.DELETE("/:id", controllers.CollectionDeleteOne)
 	}
 
 	entries := currentVersion.Group("entries")
 	{
-		entries.POST("", entryCreateOne)
+		entries.POST("", controllers.EntryCreateOne)
 
-		entries.GET("/:id", entryFindOne)
-		entries.DELETE("/:id", entryDeleteOne)
-		entries.PUT("/:id", entryUpdateOne)
+		entries.GET("/:id", controllers.EntryFindOne)
+		entries.DELETE("/:id", controllers.EntryDeleteOne)
+		entries.PUT("/:id", controllers.EntryUpdateOne)
 	}
 }
