@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"read-more-backend/models"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,7 +21,8 @@ func CollectionCreateOne(c *gin.Context) {
 		return
 	}
 
-	if len(collection.Title) < 1 {
+	collection.Title = strings.TrimSpace(collection.Title)
+	if isEmpty(collection.Title) {
 		log.Println("[Error] collectionCreateOne [1]")
 		badRequest(c)
 		return

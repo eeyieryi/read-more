@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"read-more-backend/models"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,16 +18,22 @@ func EntryCreateOne(c *gin.Context) {
 	if err != nil {
 		log.Println("[Error] entryCreateOne [0]:", err)
 		badRequest(c)
+		return
 	}
 
-	if len(dto.Title) < 1 || len(dto.Transcription) < 1 {
+	dto.Title = strings.TrimSpace(dto.Title)
+	dto.Transcription = strings.TrimSpace(dto.Transcription)
+	if isEmpty(dto.Title) || isEmpty(dto.Transcription) {
 		log.Println("[Error] entryCreateOne [1])")
 		badRequest(c)
+		return
 	}
 
-	if len(dto.CollectionTitle) < 1 && dto.CollectionID == uuid.Nil {
+	dto.CollectionTitle = strings.TrimSpace(dto.CollectionTitle)
+	if isEmpty(dto.CollectionTitle) && dto.CollectionID == uuid.Nil {
 		log.Println("[Error] entryCreateOne [2]")
 		badRequest(c)
+		return
 	}
 
 	entry := models.Entry{
@@ -99,12 +106,19 @@ func EntryUpdateOne(c *gin.Context) {
 		return
 	}
 
+	dto.Title = strings.TrimSpace(dto.Title)
+	if isEmpty(dto.Title) || isEmpty(dto.Transcription) {
+		log.Println("[Error] entryUpdateOne [4]")
+		badRequest(c)
+		return
+	}
+
 	entry := models.Entry{
 		ID: id,
 	}
 	err = entry.UpdateOne(models.Database, &dto)
 	if err != nil {
-		log.Println("[Error] entryUpdateOne [4]:", err)
+		log.Println("[Error] entryUpdateOne [5]:", err)
 		badRequest(c)
 		return
 	}
