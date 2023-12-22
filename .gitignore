@@ -1,10 +1,2 @@
-*
-
-!/read-more-backend
-!/read-more-frontend
-
-!/.gitignore
-!/.gitmodules
-!/compose.yaml
-!/LICENSE
-!/README.md
+**/_data
+**/.DS_Store
