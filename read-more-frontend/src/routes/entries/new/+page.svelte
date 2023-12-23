@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { PUBLIC_BACKEND_API } from '$env/static/public';
 	import type { entryModel } from '$lib/models';
 	import models from '$lib/models';
+	import apiService from '$lib/services/api.service';
 
 	export let data: PageData;
 
@@ -31,15 +31,9 @@
 				const body = new FormData();
 				body.set('audioFile', audioFile);
 				body.set('entryTitle', createOneDto.title);
-				const res = await fetch(`${PUBLIC_BACKEND_API}/upload`, {
-					method: 'POST',
-					body
-				});
-				if (res.ok) {
-					const data = (await res.json()) as {
-						audioFilename: string;
-					};
-					createOneDto.audioFilename = data.audioFilename;
+				const res = await apiService.upload.uploadFile(fetch, body);
+				if (res.success) {
+					createOneDto.audioFilename = res.audioFilename;
 				} else {
 					// TODO: handle error
 					return;
@@ -52,16 +46,9 @@
 
 		const result = models.entry.validators.createOne(createOneDto);
 		if (result.success) {
-			const res = await fetch(`${PUBLIC_BACKEND_API}/entries`, {
-				method: 'POST',
-				body: JSON.stringify(createOneDto),
-				headers: {
-					'content-type': 'application/json'
-				}
-			});
-			if (res.ok) {
-				const createdEntry = (await res.json()) as entryModel.Entry;
-				goto(`/entries/${createdEntry.id}`);
+			const res = await apiService.entry.createOne(fetch, createOneDto);
+			if (res.success) {
+				goto(`/entries/${res.entryData.id}`);
 			} else {
 				// TODO: handle error
 				return;

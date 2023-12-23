@@ -1,10 +1,15 @@
+import { error } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
-import type { collectionModel } from '$lib/models';
-import { PUBLIC_BACKEND_API } from '$env/static/public';
+import apiService from '$lib/services/api.service';
+import { unableToLoadError } from '$lib/errors';
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const res = await fetch(`${PUBLIC_BACKEND_API}/collections`);
+	const res = await apiService.collection.findAll(fetch);
+	if (!res.success) {
+		const err = unableToLoadError;
+		error(err.status, err.message);
+	}
 	return {
-		collections: ((await res.json()) as collectionModel.Collection[]) || []
+		collections: res.data
 	};
 };

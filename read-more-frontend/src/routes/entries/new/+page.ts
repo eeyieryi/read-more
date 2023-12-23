@@ -1,11 +1,16 @@
+import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { PUBLIC_BACKEND_API } from '$env/static/public';
-import type { collectionModel } from '$lib/models';
+import apiService from '$lib/services/api.service';
+import { unableToLoadError } from '$lib/errors';
 
 export const load: PageLoad = async ({ fetch, url }) => {
-	const data = await fetch(`${PUBLIC_BACKEND_API}/collections`);
+	const res = await apiService.collection.findAll(fetch);
+	if (!res.success) {
+		const err = unableToLoadError;
+		error(err.status, err.message);
+	}
 	return {
-		collections: (await data.json()) as collectionModel.Collection[],
+		collections: res.data,
 		fromCollectionId: url.searchParams.get('fromCollection')
 	};
 };

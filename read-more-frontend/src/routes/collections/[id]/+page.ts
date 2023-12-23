@@ -1,9 +1,14 @@
-import { PUBLIC_BACKEND_API } from '$env/static/public';
-import type { collectionModel } from '$lib/models';
+import { error } from '@sveltejs/kit';
+import { unableToLoadError } from '$lib/errors.js';
+import apiService from '$lib/services/api.service.js';
 
 export const load = async ({ fetch, params: { id } }) => {
-	const res = await fetch(`${PUBLIC_BACKEND_API}/collections/${id}`);
+	const res = await apiService.collection.findOne(fetch, id);
+	if (!res.success) {
+		const err = unableToLoadError;
+		error(err.status, err.message);
+	}
 	return {
-		collectionData: (await res.json()) as collectionModel.CollectionData
+		collectionData: res.collectionData
 	};
 };

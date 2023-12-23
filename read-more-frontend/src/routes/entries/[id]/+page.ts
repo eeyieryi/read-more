@@ -1,14 +1,21 @@
+import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import type { collectionModel, entryModel } from '$lib/models';
-import { PUBLIC_BACKEND_API } from '$env/static/public';
+import apiService from '$lib/services/api.service';
+import { unableToLoadError } from '$lib/errors';
 
 export const load: PageLoad = async ({ fetch, params: { id } }) => {
+	const res = await apiService.entry.findOne(fetch, id);
+	if (!res.success) {
+		const err = unableToLoadError;
+		error(err.status, err.message);
+	}
+	const resTwo = await apiService.collection.findAll(fetch);
+	if (!resTwo.success) {
+		const err = unableToLoadError;
+		error(err.status, err.message);
+	}
 	return {
-		entryData: (await (
-			await fetch(`${PUBLIC_BACKEND_API}/entries/${id}`)
-		).json()) as entryModel.EntryData,
-		collections: (await (
-			await fetch(`${PUBLIC_BACKEND_API}/collections`)
-		).json()) as collectionModel.Collection[]
+		entryData: res.entryData,
+		collections: resTwo.data
 	};
 };

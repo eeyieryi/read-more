@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { PUBLIC_BACKEND_API } from '$env/static/public';
 	import type { collectionModel } from '$lib/models';
+	import apiService from '$lib/services/api.service';
 
 	const createOneDto: collectionModel.CreateOneDto = {
 		title: '',
@@ -10,17 +10,11 @@
 	};
 
 	const handleSubmit = async () => {
-		const res = await fetch(`${PUBLIC_BACKEND_API}/collections`, {
-			method: 'POST',
-			body: JSON.stringify(createOneDto),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		if (res.ok) {
-			const createdCollection =
-				(await res.json()) as collectionModel.Collection;
-			goto(`/collections/${createdCollection.id}`);
+		const res = await apiService.collection.createOne(fetch, createOneDto);
+		if (res.success) {
+			goto(`/collections/${res.collection.id}`);
+		} else {
+			// TODO: handle error
 		}
 	};
 </script>

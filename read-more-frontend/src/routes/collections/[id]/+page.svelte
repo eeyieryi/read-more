@@ -3,7 +3,7 @@
 	import CollectionDetail from './CollectionDetail.svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { PUBLIC_BACKEND_API } from '$env/static/public';
+	import apiService from '$lib/services/api.service';
 
 	export let data: PageData;
 
@@ -16,14 +16,14 @@
 			return;
 		}
 
-		const res = await fetch(
-			`${PUBLIC_BACKEND_API}/collections/${data.collectionData.id}`,
-			{
-				method: 'DELETE'
-			}
+		const res = await apiService.collection.deleteOne(
+			fetch,
+			data.collectionData.id
 		);
-		if (res.ok) {
+		if (res.success) {
 			goto('/');
+		} else {
+			// TODO: handle error
 		}
 	};
 </script>

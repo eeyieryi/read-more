@@ -4,10 +4,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import type { entryModel } from '$lib/models';
-	import {
-		PUBLIC_BACKEND_API,
-		PUBLIC_BACKEND_BASE_URL
-	} from '$env/static/public';
+	import apiService from '$lib/services/api.service';
 
 	export let data: PageData;
 
@@ -15,7 +12,9 @@
 
 	const audioFilename =
 		data.entryData.audioFilename.length > 0
-			? `${PUBLIC_BACKEND_BASE_URL}/audios/${data.entryData.audioFilename}`
+			? apiService.upload.getAudioFilenameUrl(
+					data.entryData.audioFilename
+				)
 			: '';
 
 	const deleteEntry = async () => {
@@ -25,14 +24,11 @@
 			)
 		)
 			return;
-		const res = await fetch(
-			`${PUBLIC_BACKEND_API}/entries/${data.entryData.id}`,
-			{
-				method: 'DELETE'
-			}
-		);
-		if (res.ok) {
+		const res = await apiService.entry.deleteOne(fetch, data.entryData.id);
+		if (res.success) {
 			goto(`/collections/${data.entryData.collectionId}`);
+		} else {
+			// TODO: handle error
 		}
 	};
 
@@ -46,25 +42,18 @@
 	let updateOneDto: entryModel.UpdateOneDto;
 	updateOneDto = cloneEntry();
 	const saveEntry = async () => {
-		const res = await fetch(
-			`${PUBLIC_BACKEND_API}/entries/${updateOneDto.id}`,
-			{
-				method: 'PUT',
-				body: JSON.stringify(updateOneDto),
-				headers: {
-					'content-type': 'application/json'
-				}
-			}
-		);
-		if (res.ok) {
-			if (data.entryData.seen !== updateOneDto.seen) {
+		const res = await apiService.entry.updateOne(fetch, updateOneDto);
+		if (res.success) {
+			if (data.entryData.seen !== res.entry.seen) {
 				await invalidateAll();
-				goto(`/collections/${data.entryData.collectionId}`);
+				goto(`/collections/${res.entry.collectionId}`);
 			} else {
 				await invalidateAll();
 				currentMode = 'view';
 				showActions = false;
 			}
+		} else {
+			// TODO: handle error
 		}
 	};
 	const discardChanges = async () => {
