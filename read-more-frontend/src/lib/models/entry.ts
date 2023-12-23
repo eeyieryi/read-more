@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Collection } from './collection';
-import type { Unknown } from '$lib/models/utils';
+import type { Unknown } from './utils';
 
 export type Entry = {
 	id: string;
@@ -49,8 +49,13 @@ const updateOneSchema = createOneSchemaRaw
 export type CreateOneDto = z.infer<typeof createOneSchema>;
 export type UpdateOneDto = z.infer<typeof updateOneSchema>;
 
-export const validators = {
+const validators = {
 	id: (id: unknown) => idSchema.safeParse(id),
 	createOne: (data: Unknown<CreateOneDto>) => createOneSchema.safeParse(data),
 	updateOne: (data: Unknown<UpdateOneDto>) => updateOneSchema.safeParse(data)
 };
+
+const entryModel = {
+	validators
+};
+export default entryModel;

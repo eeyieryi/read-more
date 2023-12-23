@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Entry } from './entry';
-import type { Unknown } from '$lib/models/utils';
+import type { Unknown } from './utils';
 
 export type Collection = {
 	id: string;
@@ -31,3 +31,8 @@ export const validators = {
 	createOne: (data: Unknown<CreateOneDto>) => createOneSchema.safeParse(data),
 	updateOne: (data: Unknown<UpdateOneDto>) => updateOneSchema.safeParse(data)
 };
+
+const collectionRepo = {
+	validators
+};
+export default collectionRepo;

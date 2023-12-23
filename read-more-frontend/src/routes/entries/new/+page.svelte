@@ -2,7 +2,8 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { PUBLIC_BACKEND_API } from '$env/static/public';
-	import { entryModel } from '$lib/models';
+	import type { entryModel } from '$lib/models';
+	import models from '$lib/models';
 
 	export let data: PageData;
 
@@ -49,7 +50,7 @@
 			}
 		}
 
-		const result = entryModel.validators.createOne(createOneDto);
+		const result = models.entry.validators.createOne(createOneDto);
 		if (result.success) {
 			const res = await fetch(`${PUBLIC_BACKEND_API}/entries`, {
 				method: 'POST',
