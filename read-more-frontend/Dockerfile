@@ -6,10 +6,12 @@ FROM base AS setup
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY . /app
+COPY package.json pnpm-lock.yaml /app/
 RUN pnpm install --frozen-lockfile
 
 FROM setup AS build
+
+COPY . /app
 
 ARG PUBLIC_BACKEND_BASE_URL
 ENV PUBLIC_BACKEND_BASE_URL $PUBLIC_BACKEND_BASE_URL
