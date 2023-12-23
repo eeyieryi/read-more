@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { writable } from 'svelte/store';
 	import EntryDetail from './EntryDetail.svelte';
 	import type { PageData } from './$types';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -8,7 +9,7 @@
 
 	export let data: PageData;
 
-	let showActions = false;
+	const showActions = writable(false);
 
 	const audioFilename =
 		data.entryData.audioFilename.length > 0
@@ -38,7 +39,7 @@
 		};
 	};
 	type ViewerMode = 'view' | 'edit';
-	let currentMode: ViewerMode = 'view';
+	const currentMode = writable<ViewerMode>('view');
 	let updateOneDto: entryModel.UpdateOneDto;
 	updateOneDto = cloneEntry();
 	const saveEntry = async () => {
@@ -49,8 +50,8 @@
 				goto(`/collections/${res.entry.collectionId}`);
 			} else {
 				await invalidateAll();
-				currentMode = 'view';
-				showActions = false;
+				currentMode.set('view');
+				showActions.set(false);
 			}
 		} else {
 			// TODO: handle error
@@ -58,8 +59,8 @@
 	};
 	const discardChanges = async () => {
 		updateOneDto = cloneEntry();
-		currentMode = 'view';
-		showActions = false;
+		currentMode.set('view');
+		showActions.set(false);
 	};
 </script>
 
@@ -67,12 +68,12 @@
 	<title>{data.entryData.title} - {data.entryData.collection.title}</title>
 </svelte:head>
 
-{#if currentMode === 'view'}
+{#if $currentMode === 'view'}
 	<div class="flex h-full flex-col overflow-auto text-center">
 		<EntryDetail data="{data}" />
 		<div
 			class="align-center mb-2 ml-4 mt-auto flex items-center justify-center">
-			{#if showActions}
+			{#if $showActions}
 				<div class="flex flex-row gap-x-4">
 					<button
 						class="block border px-3 py-2 text-lg"
@@ -80,13 +81,13 @@
 						>Delete Entry</button>
 					<button
 						class="ml-auto block border px-3 py-2 text-lg"
-						on:click|preventDefault="{() => (currentMode = 'edit')}"
-						>Edit Entry</button>
+						on:click|preventDefault="{() =>
+							currentMode.set('edit')}">Edit Entry</button>
 				</div>
 				<button
 					class="ml-auto px-3 py-2"
-					on:click|preventDefault="{() =>
-						(showActions = !showActions)}">-</button>
+					on:click|preventDefault="{() => showActions.set(false)}"
+					>-</button>
 			{:else}
 				<!-- TODO: Move AudioPlayer to somewhere else -->
 				{#if audioFilename.length > 0}
@@ -104,12 +105,12 @@
 					>0</button>
 				<button
 					class="ml-auto px-3 py-2"
-					on:click|preventDefault="{() =>
-						(showActions = !showActions)}">+</button>
+					on:click|preventDefault="{() => showActions.set(true)}"
+					>+</button>
 			{/if}
 		</div>
 	</div>
-{:else if currentMode === 'edit'}
+{:else if $currentMode === 'edit'}
 	<div class="m-4">
 		<form
 			class="flex h-full flex-col"

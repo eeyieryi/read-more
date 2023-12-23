@@ -1,15 +1,14 @@
 <script lang="ts">
+	import { writable } from 'svelte/store';
 	import { page } from '$app/stores';
 	import '../app.pcss';
 
-	let isShowing = true;
-
-	const toggleVisibility = () => (isShowing = !isShowing);
+	const showNavbar = writable(true);
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden bg-gray-50">
 	<nav class="flex flex-row border-b-4 border-b-gray-500">
-		{#if isShowing}
+		{#if $showNavbar}
 			<a
 				class:active="{$page.route.id === '/collections' ||
 					$page.route.id === '/collections/[id]'}"
@@ -27,12 +26,15 @@
 				class:active="{$page.route.id === '/entries/new'}"
 				class="link"
 				href="/entries/new">New Entry</a>
-			<button class="btn" on:click|preventDefault="{toggleVisibility}"
+			<button
+				class="btn"
+				on:click|preventDefault="{() => showNavbar.set(false)}"
 				>-</button>
 		{:else}
 			<button
 				class="btn ml-auto"
-				on:click|preventDefault="{toggleVisibility}">+</button>
+				on:click|preventDefault="{() => showNavbar.set(true)}"
+				>+</button>
 		{/if}
 	</nav>
 	<slot />
