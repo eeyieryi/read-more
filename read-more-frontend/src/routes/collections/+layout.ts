@@ -10,6 +10,6 @@ export const load: LayoutLoad = async ({ fetch }) => {
 		error(err.status, err.message);
 	}
 	return {
-		collections: res.data
+		collections: res.collections
 	};
 };

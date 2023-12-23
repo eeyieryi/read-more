@@ -16,6 +16,6 @@ export const load: PageLoad = async ({ fetch, params: { id } }) => {
 	}
 	return {
 		entryData: res.entryData,
-		collections: resTwo.data
+		collections: resTwo.collections
 	};
 };

@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 		error(err.status, err.message);
 	}
 	return {
-		collections: res.data,
+		collections: res.collections,
 		fromCollectionId: url.searchParams.get('fromCollection')
 	};
 };

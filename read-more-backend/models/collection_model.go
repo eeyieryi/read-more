@@ -26,7 +26,7 @@ func (c *Collection) FindOne(db *gorm.DB, with *Collection) (err error) {
 
 func (c *Collection) FindAll(db *gorm.DB) ([]Collection, error) {
 	var collections []Collection
-	result := db.Model(&Collection{}).Preload(clause.Associations).Find(&collections)
+	result := db.Model(&Collection{}).Find(&collections)
 	if result.Error != nil {
 		return nil, result.Error
 	}

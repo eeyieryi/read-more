@@ -54,17 +54,17 @@ async function deleteOne(
 
 async function findAll(fetch: fetch): Promise<
 	ReturnTypeBase & {
-		data: collectionModel.CollectionData[];
+		collections: collectionModel.Collection[];
 	}
 > {
 	try {
 		const res = await fetch(`${PUBLIC_BACKEND_API}/collections`);
-		const data = (await res.json()) as collectionModel.CollectionData[];
-		return { success: res.ok, data };
+		const data = (await res.json()) as collectionModel.Collection[];
+		return { success: res.ok, collections: data };
 	} catch (err) {
 		return {
 			success: false,
-			data: []
+			collections: []
 		};
 	}
 }
