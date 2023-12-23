@@ -18,7 +18,7 @@
   "devDependencies": {
     "@playwright/test": "^1.40.1",
     "@sveltejs/adapter-node": "^2.0.2",
-    "@sveltejs/kit": "^2.0.5",
+    "@sveltejs/kit": "^2.0.6",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/node": "^20.10.5",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
