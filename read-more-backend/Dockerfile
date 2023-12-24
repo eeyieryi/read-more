@@ -9,4 +9,4 @@ FROM alpine:latest AS run
 WORKDIR /app
 VOLUME [ "/app/_data" ]
 COPY --from=build /app/read-more-backend /app/read-more-backend
-CMD ./read-more-backend
+CMD GIN_MODE=release ./read-more-backend
