@@ -1,8 +1,10 @@
 **
 
 !/api/*.go
+!/api/middlewares/*.go
 !/controllers/*.go
 !/models/*.go
+!/utils/*.go
 !/go.mod
 !/go.sum
 !/main.go
