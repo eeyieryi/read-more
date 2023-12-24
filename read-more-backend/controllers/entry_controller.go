@@ -1,54 +1,60 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"read-more-backend/models"
-	"strings"
+	"read-more-backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func EntryCreateOne(c *gin.Context) {
-	var err error
+	funcName := "EntryCreateOne"
+
 	var dto models.CreateEntryDto
 
-	err = c.ShouldBindJSON(&dto)
-	if err != nil {
-		log.Println("[Error] entryCreateOne [0]:", err)
-		badRequest(c)
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		BadRequest(c)
 		return
 	}
 
-	dto.Title = strings.TrimSpace(dto.Title)
-	dto.Transcription = strings.TrimSpace(dto.Transcription)
-	if isEmpty(dto.Title) || isEmpty(dto.Transcription) {
-		log.Println("[Error] entryCreateOne [1])")
-		badRequest(c)
+	if utils.IsEmpty(dto.Title) || utils.IsEmpty(dto.Transcription) {
+		log.Println(utils.GetLogMessage(funcName, 1, "(title) and (transcription) must be provided"))
+		BadRequest(c)
 		return
 	}
 
-	dto.CollectionTitle = strings.TrimSpace(dto.CollectionTitle)
-	if isEmpty(dto.CollectionTitle) && dto.CollectionID == uuid.Nil {
-		log.Println("[Error] entryCreateOne [2]")
-		badRequest(c)
+	var hasCollectionId, hasNewCollectionTitle bool
+
+	hasCollectionId = !utils.IsEmpty(dto.CollectionID)
+	hasNewCollectionTitle = !utils.IsEmpty(dto.CollectionTitle)
+
+	if !hasCollectionId && !hasNewCollectionTitle {
+		log.Println(utils.GetLogMessage(funcName, 2, "(collectionId) or *new* (collectionTitle) must be provided"))
+		BadRequest(c)
 		return
 	}
 
-	entry := models.Entry{
-		Title:         dto.Title,
-		Description:   dto.Description,
-		URL:           dto.URL,
-		Transcription: dto.Transcription,
-		AudioFilename: dto.AudioFilename,
-		Seen:          false,
-		CollectionID:  dto.CollectionID,
+	var parsedId uuid.UUID
+	if hasCollectionId {
+		var err error
+		parsedId, err = uuid.Parse(dto.CollectionID)
+		if err != nil || parsedId == uuid.Nil {
+			log.Println(utils.GetLogMessage(funcName, 3, err))
+			BadRequest(c)
+			return
+		}
 	}
-	err = entry.CreateOne(models.Database, dto.CollectionTitle)
-	if err != nil {
-		log.Println("[Error] entryCreateOne [3]:", err)
-		badRequest(c)
+
+	entry := models.CreateEntryFromDto(dto, parsedId)
+	if err := entry.CreateOne(models.Database, dto.CollectionTitle); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 4, err))
+		InternalServerError(c)
 		return
 	}
 
@@ -56,18 +62,22 @@ func EntryCreateOne(c *gin.Context) {
 }
 
 func EntryFindOne(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		log.Println("[Error] entryFindOne [0]:", err)
-		badRequest(c)
-		return
-	}
+	funcName := "EntryFindOne"
 
-	entry := &models.Entry{}
-	err = entry.FindOne(models.Database, &models.Entry{ID: id})
-	if err != nil {
-		log.Println("[Error] entryFindOne [1]:", err)
-		badRequest(c)
+	id := c.MustGet("id").(uuid.UUID)
+
+	var entry models.Entry
+
+	var with models.Entry
+	with.ID = id
+
+	if err := entry.FindOne(models.Database, &with); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			NotFound(c)
+			return
+		}
+		InternalServerError(c)
 		return
 	}
 
@@ -75,51 +85,30 @@ func EntryFindOne(c *gin.Context) {
 }
 
 func EntryUpdateOne(c *gin.Context) {
-	var err error
-	var id uuid.UUID
+	funcName := "EntryUpdateOne"
 
-	id, err = uuid.Parse(c.Param("id"))
-	if err != nil {
-		log.Println("[Error] entryUpdateOne [0]:", err)
-		badRequest(c)
+	id := c.MustGet("id").(uuid.UUID)
+
+	var dto models.Entry
+
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		BadRequest(c)
 		return
 	}
 
-	var dto models.UpdateEntryDto
-
-	err = c.ShouldBindJSON(&dto)
-	if err != nil {
-		log.Println("[Error] entryUpdateOne [1]:", err)
-		badRequest(c)
+	if dto.CollectionID == uuid.Nil || utils.IsEmpty(dto.Title) || utils.IsEmpty(dto.Transcription) {
+		log.Println(utils.GetLogMessage(funcName, 1, "(title) and (transcription) and (collectionId) must be provided"))
+		BadRequest(c)
 		return
 	}
 
-	if dto.ID == uuid.Nil || id == uuid.Nil {
-		log.Println("[Error] entryUpdateOne [2]")
-		badRequest(c)
-		return
-	}
+	var entry models.Entry
+	entry.ID = id
 
-	if dto.ID != id {
-		log.Println("[Error] entryUpdateOne [3]")
-		badRequest(c)
-		return
-	}
-
-	dto.Title = strings.TrimSpace(dto.Title)
-	if isEmpty(dto.Title) || isEmpty(dto.Transcription) {
-		log.Println("[Error] entryUpdateOne [4]")
-		badRequest(c)
-		return
-	}
-
-	entry := models.Entry{
-		ID: id,
-	}
-	err = entry.UpdateOne(models.Database, &dto)
-	if err != nil {
-		log.Println("[Error] entryUpdateOne [5]:", err)
-		badRequest(c)
+	if err := entry.UpdateOne(models.Database, &dto); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 2, err))
+		InternalServerError(c)
 		return
 	}
 
@@ -127,20 +116,16 @@ func EntryUpdateOne(c *gin.Context) {
 }
 
 func EntryDeleteOne(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		log.Println("[Error] entryDeleteOne [0]:", err)
-		badRequest(c)
-		return
-	}
+	funcName := "EntryDeleteOne"
 
-	entry := &models.Entry{
-		ID: id,
-	}
-	err = entry.DeleteOne(models.Database)
-	if err != nil {
-		log.Println("[Error] entryDeleteOne [1]:", err)
-		badRequest(c)
+	id := c.MustGet("id").(uuid.UUID)
+
+	var entry models.Entry
+	entry.ID = id
+
+	if err := entry.DeleteOne(models.Database); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		InternalServerError(c)
 		return
 	}
 

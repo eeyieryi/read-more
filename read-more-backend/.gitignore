@@ -1,11 +1,17 @@
 *
 
 !/api
-!/api/**
-!/models
-!/models/**
+!/api/*.go
+!/api/middlewares
+!/api/middlewares/*.go
 !/controllers
-!/controllers/**
+!/controllers/*.go
+!/models
+!/models/*.go
+!/utils
+!/utils/*.go
+
+**/.DS_Store
 
 !/.gitignore
 !/go.mod
@@ -17,5 +23,3 @@
 
 !/README.md
 !/LICENSE
-
-**/.DS_Store

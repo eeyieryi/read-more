@@ -1,9 +1,8 @@
 package models
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
+	"errors"
+	"read-more-backend/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -27,18 +26,45 @@ func (e *Entry) BeforeCreate(tx *gorm.DB) (err error) {
 	return err
 }
 
-func (e *Entry) FindOne(db *gorm.DB, with *Entry) (err error) {
-	err = db.Model(&Entry{}).Preload(clause.Associations).First(e, with).Error
-	return err
+type CreateEntryDto struct {
+	// Must be provided
+	Title string `json:"title"`
+	// Must be provided
+	Transcription string `json:"transcription"`
+
+	// Optional
+	Description string `json:"description"`
+	// Optional
+	URL string `json:"url"`
+	// Optional
+	AudioFilename string `json:"audioFilename"`
+
+	// CollectionID or CollectionTitle must be provided
+	CollectionID string `json:"collectionId"`
+	// CollectionID or CollectionTitle must be provided
+	CollectionTitle string `json:"collectionTitle"`
+}
+
+func CreateEntryFromDto(dto CreateEntryDto, collectionId uuid.UUID) *Entry {
+	return &Entry{
+		Title:         dto.Title,
+		Description:   dto.Description,
+		URL:           dto.URL,
+		Transcription: dto.Transcription,
+		AudioFilename: dto.AudioFilename,
+		Seen:          false,
+		CollectionID:  collectionId,
+	}
 }
 
 func (e *Entry) CreateOne(db *gorm.DB, collectionTitle string) (err error) {
 	return db.Transaction(func(tx *gorm.DB) (err error) {
-		if e.CollectionID == uuid.Nil && len(collectionTitle) >= 1 {
+		if e.CollectionID == uuid.Nil {
+			if utils.IsEmpty(collectionTitle) {
+				return errors.New("both (collectionId) and (collectionTitle) were not provided")
+			}
 			newCollection := &Collection{
-				Title:       collectionTitle,
-				Description: collectionTitle,
-				URL:         collectionTitle,
+				Title: collectionTitle,
 			}
 			err = newCollection.CreateOne(tx)
 			if err != nil {
@@ -53,7 +79,12 @@ func (e *Entry) CreateOne(db *gorm.DB, collectionTitle string) (err error) {
 	})
 }
 
-func (e *Entry) UpdateOne(db *gorm.DB, with *UpdateEntryDto) (err error) {
+func (e *Entry) FindOne(db *gorm.DB, with *Entry) (err error) {
+	err = db.Model(&Entry{}).Preload(clause.Associations).First(e, with).Error
+	return err
+}
+
+func (e *Entry) UpdateOne(db *gorm.DB, with *Entry) (err error) {
 	err = db.Model(e).Updates(map[string]interface{}{
 		"title":          with.Title,
 		"description":    with.Description,
@@ -69,131 +100,4 @@ func (e *Entry) UpdateOne(db *gorm.DB, with *UpdateEntryDto) (err error) {
 func (e *Entry) DeleteOne(tx *gorm.DB) (err error) {
 	err = tx.Delete(e).Error
 	return err
-}
-
-type CreateEntryDto struct {
-	Title           string    `json:"title"`
-	Description     string    `json:"description"`
-	URL             string    `json:"url"`
-	Transcription   string    `json:"transcription"`
-	AudioFilename   string    `json:"audioFilename"`
-	Seen            bool      `json:"seen"`
-	CollectionID    uuid.UUID `json:"collectionId"`
-	CollectionTitle string    `json:"collectionTitle"`
-}
-
-func (dto *CreateEntryDto) UnmarshalJSON(data []byte) error {
-	var err error
-
-	type Alias CreateEntryDto
-	raw := struct {
-		Alias
-		CollectionID string `json:"collectionId"`
-	}{}
-
-	err = json.Unmarshal(data, &raw)
-	if err != nil {
-		log.Println("[Error] createEntryDto.(UnmarshalJSON) [0]:", err)
-		return err
-	}
-
-	var parsedUUID uuid.UUID
-	if len(raw.CollectionID) > 0 {
-		parsedUUID, err = uuid.Parse(raw.CollectionID)
-		if err != nil {
-			log.Println("[Error] createEntryDto.(UnmarshalJSON) [1]:", err)
-		}
-	}
-
-	hasCollectionId := parsedUUID != uuid.Nil
-	hasCollectionTitle := len(raw.CollectionTitle) > 0
-	continueBool := hasCollectionId || hasCollectionTitle
-	if !continueBool {
-		return fmt.Errorf("one of the fields (collectionId) or (collectionTitle) must be provided")
-	}
-
-	dto.Title = raw.Title
-	dto.Description = raw.Description
-	dto.URL = raw.URL
-	dto.Transcription = raw.Transcription
-	dto.AudioFilename = raw.AudioFilename
-	dto.Seen = raw.Seen
-
-	if hasCollectionId {
-		dto.CollectionID = parsedUUID
-	}
-
-	if hasCollectionTitle {
-		dto.CollectionTitle = raw.CollectionTitle
-	}
-
-	return nil
-}
-
-type UpdateEntryDto struct {
-	ID            uuid.UUID `json:"id"`
-	Title         string    `json:"title"`
-	Description   string    `json:"description"`
-	URL           string    `json:"url"`
-	Transcription string    `json:"transcription"`
-	AudioFilename string    `json:"audioFilename"`
-	Seen          bool      `json:"seen"`
-	CollectionID  uuid.UUID `json:"collectionId"`
-}
-
-func (dto *UpdateEntryDto) UnmarshalJSON(data []byte) error {
-	var err error
-
-	type Alias UpdateEntryDto
-	raw := struct {
-		Alias
-		ID           string `json:"id"`
-		CollectionID string `json:"collectionId"`
-	}{}
-
-	err = json.Unmarshal(data, &raw)
-	if err != nil {
-		log.Println("[Error] updateEntryDto.(UnmarshalJSON) [0]:", err)
-		return err
-	}
-
-	var parsedIdUUID uuid.UUID
-	if len(raw.ID) > 0 {
-		parsedIdUUID, err = uuid.Parse(raw.ID)
-		if err != nil {
-			log.Println("[Error] updateEntryDto.(UnmarshalJSON) [1]:", err)
-		}
-	}
-
-	var parsedCollectionUUID uuid.UUID
-	if len(raw.CollectionID) > 0 {
-		parsedCollectionUUID, err = uuid.Parse(raw.CollectionID)
-		if err != nil {
-			log.Println("[Error] updateEntryDto.(UnmarshalJSON) [2]:", err)
-		}
-	}
-
-	hasId := parsedIdUUID != uuid.Nil
-	hasCollectionId := parsedCollectionUUID != uuid.Nil
-	continueBool := hasId && hasCollectionId
-	if !continueBool {
-		return fmt.Errorf("both Entry.(ID) and Entry.(CollectionID) must be provided")
-	}
-
-	dto.Title = raw.Title
-	dto.Description = raw.Description
-	dto.URL = raw.URL
-	dto.Transcription = raw.Transcription
-	dto.AudioFilename = raw.AudioFilename
-	dto.Seen = raw.Seen
-
-	if hasId {
-		dto.ID = parsedIdUUID
-	}
-
-	if hasCollectionId {
-		dto.CollectionID = parsedCollectionUUID
-	}
-
-	return nil
 }

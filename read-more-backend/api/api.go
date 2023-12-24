@@ -1,6 +1,7 @@
 package api
 
 import (
+	"read-more-backend/api/middlewares"
 	"read-more-backend/controllers"
 
 	"github.com/gin-gonic/gin"
@@ -20,16 +21,16 @@ func Setup(router *gin.Engine) {
 		collections.GET("", controllers.CollectionFindAll)
 		collections.POST("", controllers.CollectionCreateOne)
 
-		collections.GET("/:id", controllers.CollectionFindOne)
-		collections.DELETE("/:id", controllers.CollectionDeleteOne)
+		collections.GET("/:id", middlewares.ParseIdFromParams, controllers.CollectionFindOne)
+		collections.DELETE("/:id", middlewares.ParseIdFromParams, controllers.CollectionDeleteOne)
 	}
 
 	entries := currentVersion.Group("entries")
 	{
 		entries.POST("", controllers.EntryCreateOne)
 
-		entries.GET("/:id", controllers.EntryFindOne)
-		entries.DELETE("/:id", controllers.EntryDeleteOne)
-		entries.PUT("/:id", controllers.EntryUpdateOne)
+		entries.GET("/:id", middlewares.ParseIdFromParams, controllers.EntryFindOne)
+		entries.DELETE("/:id", middlewares.ParseIdFromParams, controllers.EntryDeleteOne)
+		entries.PUT("/:id", middlewares.ParseIdFromParams, controllers.EntryUpdateOne)
 	}
 }

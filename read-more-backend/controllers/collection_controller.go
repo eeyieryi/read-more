@@ -1,37 +1,37 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"read-more-backend/models"
-	"strings"
+	"read-more-backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func CollectionCreateOne(c *gin.Context) {
-	var err error
+	funcName := "CollectionCreateOne"
+
 	var collection models.Collection
 
-	err = c.ShouldBindJSON(&collection)
-	if err != nil {
-		log.Println("[Error] collectionCreateOne [0]:", err)
-		badRequest(c)
+	if err := c.ShouldBindJSON(&collection); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		BadRequest(c)
 		return
 	}
 
-	collection.Title = strings.TrimSpace(collection.Title)
-	if isEmpty(collection.Title) {
-		log.Println("[Error] collectionCreateOne [1]")
-		badRequest(c)
+	if utils.IsEmpty(collection.Title) {
+		log.Println(utils.GetLogMessage(funcName, 1, "collection title is empty"))
+		BadRequest(c)
 		return
 	}
 
-	err = collection.CreateOne(models.Database)
-	if err != nil {
-		log.Println("[Error] collectionCreateOne [2]:", err)
-		badRequest(c)
+	if err := collection.CreateOne(models.Database); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 2, err))
+		InternalServerError(c)
 		return
 	}
 
@@ -39,9 +39,12 @@ func CollectionCreateOne(c *gin.Context) {
 }
 
 func CollectionFindAll(c *gin.Context) {
+	funcName := "CollectionFindAll"
+
 	collections, err := (&models.Collection{}).FindAll(models.Database)
 	if err != nil {
-		internalServerError(c)
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		InternalServerError(c)
 		return
 	}
 
@@ -49,18 +52,22 @@ func CollectionFindAll(c *gin.Context) {
 }
 
 func CollectionFindOne(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		log.Println("[Error] collectionFindOne [0]:", err)
-		badRequest(c)
-		return
-	}
+	funcName := "CollectionFindOne"
 
-	collection := &models.Collection{}
-	err = collection.FindOne(models.Database, &models.Collection{ID: id})
-	if err != nil {
-		log.Println("[Error] collectionFindOne [1]:", err)
-		badRequest(c)
+	id := c.MustGet("id").(uuid.UUID)
+
+	var collection models.Collection
+
+	var with models.Collection
+	with.ID = id
+
+	if err := collection.FindOne(models.Database, &with); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			NotFound(c)
+			return
+		}
+		InternalServerError(c)
 		return
 	}
 
@@ -68,20 +75,16 @@ func CollectionFindOne(c *gin.Context) {
 }
 
 func CollectionDeleteOne(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		log.Println("[Error] collectionDeleteOne [0]:", err)
-		badRequest(c)
-		return
-	}
+	funcName := "CollectionDeleteOne"
 
-	collection := &models.Collection{
-		ID: id,
-	}
-	err = collection.DeleteOne(models.Database)
-	if err != nil {
-		log.Println("[Error] collectionDeleteOne [1]:", err)
-		badRequest(c)
+	id := c.MustGet("id").(uuid.UUID)
+
+	var collection models.Collection
+	collection.ID = id
+
+	if err := collection.DeleteOne(models.Database); err != nil {
+		log.Println(utils.GetLogMessage(funcName, 0, err))
+		InternalServerError(c)
 		return
 	}
 
