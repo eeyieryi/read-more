@@ -16,13 +16,7 @@
 </div>
 
 <style>
-	@font-face {
-		font-family: 'NotoSansSC';
-		src: url('/fonts/NotoSansSC-VariableFont_wght.ttf') format('ttf');
-		font-weight: normal;
-		font-style: normal;
-	}
 	pre {
-		font-family: 'NotoSansSC', sans-serif;
+		font-family: 'NotoSansSC';
 	}
 </style>
