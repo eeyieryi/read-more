@@ -14,3 +14,15 @@
 		class="mx-16 whitespace-pre-wrap pb-96 pt-14 text-2xl text-gray-700 lg:mx-72">{data
 			.entryData.transcription}</pre>
 </div>
+
+<style>
+	@font-face {
+		font-family: 'NotoSansSC';
+		src: url('/fonts/NotoSansSC-VariableFont_wght.ttf') format('ttf');
+		font-weight: normal;
+		font-style: normal;
+	}
+	pre {
+		font-family: 'NotoSansSC', sans-serif;
+	}
+</style>
